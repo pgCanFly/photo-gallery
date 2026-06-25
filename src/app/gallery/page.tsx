@@ -6,6 +6,8 @@ import Link from "next/link";
 import { GalleryGrid } from "@/components/ui/gallery-grid";
 import { galleryPhotos } from "@/data/photos";
 import { Button } from "@/components/ui/button";
+import { useUploadedPhotos } from "@/hooks/uploaded-photos";
+import { UploadButton } from "@/components/upload-button";
 
 function shuffleArray<T>(array: T[]): T[] {
   const shuffled = [...array];
@@ -18,7 +20,7 @@ function shuffleArray<T>(array: T[]): T[] {
 
 export default function GalleryPage() {
   const [shuffleKey, setShuffleKey] = useState(0);
-  const [shuffledPhotos, setShuffledPhotos] = useState(galleryPhotos);
+  const [shuffledPhotos, setShuffledPhotos] = useState<typeof galleryPhotos | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
 
   // ── Parallax scroll ──
@@ -27,18 +29,35 @@ export default function GalleryPage() {
   const titleParallaxY = useTransform(scrollY, [0, 400], [0, -40]);
   const descParallaxY = useTransform(scrollY, [0, 400], [0, -20]);
 
+  // ── Uploaded photos ──
+  const { photos: uploadedPhotos, refresh, deletePhoto } = useUploadedPhotos();
+
+  // Merge static + uploaded photos for the grid
+  const allGridPhotos = [
+    ...galleryPhotos,
+    ...uploadedPhotos.map((up, i) => ({
+      id: 1000 + i,
+      src: up.url,
+      alt: `Uploaded photo ${i + 1}`,
+      title: `Uploaded ${i + 1}`,
+      public_id: up.public_id,
+      isUploaded: true as const,
+    })),
+  ];
+  const totalPhotoCount = allGridPhotos.length;
+
   const handleShuffle = useCallback(() => {
     if (isAnimating) return;
     setIsAnimating(true);
 
-    // Fisher-Yates shuffle
-    const shuffled = shuffleArray(galleryPhotos);
+    // Shuffle all photos (static + uploaded)
+    const shuffled = shuffleArray(allGridPhotos);
     setShuffledPhotos(shuffled);
     setShuffleKey((k) => k + 1);
 
     // Briefly disable button while stagger animation plays
     setTimeout(() => setIsAnimating(false), 700);
-  }, [isAnimating]);
+  }, [isAnimating, allGridPhotos]);
 
   return (
     <main className="min-h-screen overflow-hidden bg-background">
@@ -103,7 +122,7 @@ export default function GalleryPage() {
                 <circle cx="8.5" cy="8.5" r="1.5" />
                 <polyline points="21 15 16 10 5 21" />
               </svg>
-              {galleryPhotos.length} photos
+              {totalPhotoCount} photos
             </div>
 
             {/* Shuffle button */}
@@ -142,8 +161,13 @@ export default function GalleryPage() {
 
       {/* ── Gallery grid (key change → full remount → stagger re-animation) ── */}
       <div className="mx-auto max-w-7xl px-6 py-12 sm:px-8 sm:py-16">
-        <GalleryGrid key={shuffleKey} photos={shuffledPhotos} />
+        <GalleryGrid
+          key={shuffleKey}
+          photos={shuffledPhotos ?? allGridPhotos}
+          onDeletePhoto={deletePhoto}
+        />
       </div>
+      <UploadButton onUploadComplete={refresh} />
     </main>
   );
 }

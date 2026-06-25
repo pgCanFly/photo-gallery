@@ -8,6 +8,8 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Lightbox } from "@/components/ui/lightbox";
+import { useUploadedPhotos } from "@/hooks/uploaded-photos";
+import { UploadButton } from "@/components/upload-button";
 
 export const PhotoGallery = ({
   animationDelay = 0.5,
@@ -24,6 +26,36 @@ export const PhotoGallery = ({
   const subtitleParallaxY = useTransform(scrollY, [0, 600], [0, -50]);
   const titleParallaxY = useTransform(scrollY, [0, 600], [0, -70]);
   const photosParallaxY = useTransform(scrollY, [0, 600], [0, -120]);
+
+  // ── Uploaded photos ──
+  const { photos: uploadedPhotos, refresh } = useUploadedPhotos();
+
+  // Dynamic fan: static 5 photos + uploaded photos
+  const staticPhotos = [
+    { id: 1, order: 0, x: "-320px", y: "15px", zIndex: 50, direction: "left" as Direction, src: "https://images.pexels.com/photos/32025694/pexels-photo-32025694/free-photo-of-romantic-wedding-in-ancient-ruins.jpeg", alt: "Romantic wedding in ancient ruins" },
+    { id: 2, order: 1, x: "-160px", y: "32px", zIndex: 40, direction: "left" as Direction, src: "https://images.pexels.com/photos/31596551/pexels-photo-31596551/free-photo-of-winter-scene-with-lake-view-in-van-turkiye.jpeg", alt: "Winter scene with lake view in Van" },
+    { id: 3, order: 2, x: "0px", y: "8px", zIndex: 30, direction: "right" as Direction, src: "https://images.pexels.com/photos/31890053/pexels-photo-31890053/free-photo-of-moody-portrait-with-heart-shaped-light.jpeg", alt: "Moody portrait with heart-shaped light" },
+    { id: 4, order: 3, x: "160px", y: "22px", zIndex: 20, direction: "right" as Direction, src: "https://images.pexels.com/photos/19936068/pexels-photo-19936068/free-photo-of-women-sitting-on-hilltop-with-clouds-below.jpeg", alt: "Women sitting on hilltop with clouds below" },
+    { id: 5, order: 4, x: "320px", y: "44px", zIndex: 10, direction: "left" as Direction, src: "https://images.pexels.com/photos/20494995/pexels-photo-20494995/free-photo-of-head-of-peacock.jpeg", alt: "Head of peacock" },
+  ];
+
+  // Generate positions for uploaded photos extending to the right
+  const uploadedFanPhotos = uploadedPhotos.map((up, i) => ({
+    id: 100 + i,
+    order: 5 + i,
+    x: `${480 + i * 160}px`,
+    y: `${10 + (i % 3) * 15}px`,
+    zIndex: 5 - i,
+    direction: (i % 2 === 0 ? "left" : "right") as Direction,
+    src: up.url,
+    alt: `Uploaded photo ${i + 1}`,
+  }));
+
+  const allPhotos = [...staticPhotos, ...uploadedFanPhotos];
+  // Calculate needed container width: static = 640px + uploaded = N*160px + padding
+  const fanWidth = uploadedFanPhotos.length > 0
+    ? Math.max(640, 640 + uploadedFanPhotos.length * 160 + 80)
+    : 640;
 
   useEffect(() => {
     // First make the container visible with a fade-in
@@ -81,60 +113,6 @@ export const PhotoGallery = ({
     }),
   };
 
-  // Photo positions - horizontal layout with random y offsets
-  const photos = [
-    {
-      id: 1,
-      order: 0,
-      x: "-320px",
-      y: "15px",
-      zIndex: 50, // Highest z-index (on top)
-      direction: "left" as Direction,
-      src: "https://images.pexels.com/photos/32025694/pexels-photo-32025694/free-photo-of-romantic-wedding-in-ancient-ruins.jpeg",
-      alt: "Romantic wedding in ancient ruins",
-    },
-    {
-      id: 2,
-      order: 1,
-      x: "-160px",
-      y: "32px",
-      zIndex: 40,
-      direction: "left" as Direction,
-      src: "https://images.pexels.com/photos/31596551/pexels-photo-31596551/free-photo-of-winter-scene-with-lake-view-in-van-turkiye.jpeg",
-      alt: "Winter scene with lake view in Van",
-    },
-    {
-      id: 3,
-      order: 2,
-      x: "0px",
-      y: "8px",
-      zIndex: 30,
-      direction: "right" as Direction,
-      src: "https://images.pexels.com/photos/31890053/pexels-photo-31890053/free-photo-of-moody-portrait-with-heart-shaped-light.jpeg",
-      alt: "Moody portrait with heart-shaped light",
-    },
-    {
-      id: 4,
-      order: 3,
-      x: "160px",
-      y: "22px",
-      zIndex: 20,
-      direction: "right" as Direction,
-      src: "https://images.pexels.com/photos/19936068/pexels-photo-19936068/free-photo-of-women-sitting-on-hilltop-with-clouds-below.jpeg",
-      alt: "Women sitting on hilltop with clouds below",
-    },
-    {
-      id: 5,
-      order: 4,
-      x: "320px",
-      y: "44px",
-      zIndex: 10, // Lowest z-index (at bottom)
-      direction: "left" as Direction,
-      src: "https://images.pexels.com/photos/20494995/pexels-photo-20494995/free-photo-of-head-of-peacock.jpeg",
-      alt: "Head of peacock",
-    },
-  ];
-
   return (
     <div className="mt-40 relative">
       <motion.div
@@ -169,9 +147,12 @@ export const PhotoGallery = ({
             initial="hidden"
             animate={isLoaded ? "visible" : "hidden"}
           >
-            <div className="relative h-[220px] w-[220px]">
+            <div
+              className="relative"
+              style={{ width: fanWidth, height: 220 }}
+            >
               {/* Render photos in reverse order so that higher z-index photos are rendered later in the DOM */}
-              {[...photos].reverse().map((photo) => (
+              {[...allPhotos].reverse().map((photo) => (
                 <motion.div
                   key={photo.id}
                   className="absolute left-0 top-0"
@@ -207,7 +188,7 @@ export const PhotoGallery = ({
       <AnimatePresence>
         {selectedIndex !== null && (
           <Lightbox
-            photos={photos}
+            photos={allPhotos}
             currentIndex={selectedIndex}
             onClose={() => setSelectedIndex(null)}
             onPrev={() =>
@@ -217,12 +198,13 @@ export const PhotoGallery = ({
             }
             onNext={() =>
               setSelectedIndex((prev) =>
-                prev !== null && prev < photos.length - 1 ? prev + 1 : prev
+                prev !== null && prev < allPhotos.length - 1 ? prev + 1 : prev
               )
             }
           />
         )}
       </AnimatePresence>
+      <UploadButton onUploadComplete={refresh} />
     </div>
   );
 };
