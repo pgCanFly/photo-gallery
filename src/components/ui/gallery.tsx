@@ -1,6 +1,6 @@
 "use client";
 
-import { Ref, forwardRef, useState, useEffect, useRef, useCallback } from "react";
+import { Ref, forwardRef, useState, useEffect, useRef } from "react";
 import Image, { ImageProps } from "next/image";
 import { motion, useMotionValue, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
@@ -54,13 +54,19 @@ export const PhotoGallery = ({
   const allPhotos = [...staticPhotos, ...uploadedFanPhotos];
 
   // ── Horizontal scroll ──
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    // Only intercept if there's scrollable content
-    if (scrollRef.current && scrollRef.current.scrollWidth > scrollRef.current.clientWidth) {
-      e.preventDefault();
-      scrollRef.current.scrollLeft += e.deltaY;
-    }
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const handler = (e: WheelEvent) => {
+      if (el.scrollWidth > el.clientWidth) {
+        e.preventDefault();
+        el.scrollLeft += e.deltaY;
+      }
+    };
+    el.addEventListener("wheel", handler, { passive: false });
+    return () => el.removeEventListener("wheel", handler);
   }, []);
 
   useEffect(() => {
@@ -154,8 +160,7 @@ export const PhotoGallery = ({
             animate={isLoaded ? "visible" : "hidden"}
           >
             <div
-              ref={scrollRef}
-              onWheel={handleWheel}
+              ref={scrollContainerRef}
               className="relative flex justify-start overflow-x-auto scrollbar-hide pl-6"
               style={{ height: 220 }}
             >
