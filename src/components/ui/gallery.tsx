@@ -147,7 +147,7 @@ export const PhotoGallery = ({
         Welcome to My <span className="text-rose-500"> Stories</span>
       </motion.h3>
       <motion.div
-        className="relative mb-8 h-[350px] w-full lg:flex"
+        className="relative mb-12 h-[400px] w-full lg:flex"
         style={{ y: photosParallaxY }}
       >
         <motion.div
@@ -165,7 +165,7 @@ export const PhotoGallery = ({
             <div
               ref={scrollAreaRef}
               className="relative flex justify-start overflow-hidden pl-6"
-              style={{ height: 220 }}
+              style={{ height: 300 }}
             >
               <div
                 className="relative shrink-0"
