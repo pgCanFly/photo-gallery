@@ -200,7 +200,7 @@ export const PhotoGallery = ({
       <div className="flex w-full justify-center">
         <Link href="/gallery">
           <Button>
-            View All Stories
+            View All Stories ✦
           </Button>
         </Link>
       </div>
