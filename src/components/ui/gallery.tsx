@@ -30,28 +30,17 @@ export const PhotoGallery = ({
   // ── Uploaded photos ──
   const { photos: uploadedPhotos, refresh } = useUploadedPhotos();
 
-  // Dynamic fan: static 5 photos + uploaded photos, left-to-right
-  const staticPhotos = [
-    { id: 1, order: 0, x: "0px", y: "15px", zIndex: 50, direction: "left" as Direction, src: "https://images.pexels.com/photos/32025694/pexels-photo-32025694/free-photo-of-romantic-wedding-in-ancient-ruins.jpeg", alt: "Romantic wedding in ancient ruins" },
-    { id: 2, order: 1, x: "160px", y: "32px", zIndex: 40, direction: "left" as Direction, src: "https://images.pexels.com/photos/31596551/pexels-photo-31596551/free-photo-of-winter-scene-with-lake-view-in-van-turkiye.jpeg", alt: "Winter scene with lake view in Van" },
-    { id: 3, order: 2, x: "320px", y: "8px", zIndex: 30, direction: "right" as Direction, src: "https://images.pexels.com/photos/31890053/pexels-photo-31890053/free-photo-of-moody-portrait-with-heart-shaped-light.jpeg", alt: "Moody portrait with heart-shaped light" },
-    { id: 4, order: 3, x: "480px", y: "22px", zIndex: 20, direction: "right" as Direction, src: "https://images.pexels.com/photos/19936068/pexels-photo-19936068/free-photo-of-women-sitting-on-hilltop-with-clouds-below.jpeg", alt: "Women sitting on hilltop with clouds below" },
-    { id: 5, order: 4, x: "640px", y: "44px", zIndex: 10, direction: "left" as Direction, src: "https://images.pexels.com/photos/20494995/pexels-photo-20494995/free-photo-of-head-of-peacock.jpeg", alt: "Head of peacock" },
-  ];
-
-  // Generate positions for uploaded photos extending to the right
-  const uploadedFanPhotos = uploadedPhotos.map((up, i) => ({
+  // Generate positions for all photos (left-to-right, starting at 0)
+  const allPhotos = uploadedPhotos.map((up, i) => ({
     id: 100 + i,
-    order: 5 + i,
-    x: `${800 + i * 160}px`,
+    order: i,
+    x: `${i * 160}px`,
     y: `${10 + (i % 3) * 15}px`,
-    zIndex: 5 - i,
+    zIndex: 50 - i,
     direction: (i % 2 === 0 ? "left" : "right") as Direction,
     src: up.url,
     alt: `Uploaded photo ${i + 1}`,
   }));
-
-  const allPhotos = [...staticPhotos, ...uploadedFanPhotos];
 
   // ── Horizontal scroll via translateX ──
   const scrollAreaRef = useRef<HTMLDivElement>(null);
