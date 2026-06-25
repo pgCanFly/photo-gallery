@@ -94,7 +94,7 @@ export function GalleryGrid({ photos, onDeletePhoto }: GalleryGridProps) {
                     onDeletePhoto(photo.public_id!);
                   }
                 }}
-                className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white/80 opacity-0 transition-all duration-200 hover:bg-red-500 hover:text-white group-hover:opacity-100"
+                className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/40 text-white/80 transition-all duration-200 hover:bg-red-500 hover:text-white"
                 aria-label="删除照片"
               >
                 <svg

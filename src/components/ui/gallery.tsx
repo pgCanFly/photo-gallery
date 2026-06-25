@@ -52,10 +52,6 @@ export const PhotoGallery = ({
   }));
 
   const allPhotos = [...staticPhotos, ...uploadedFanPhotos];
-  // Calculate needed container width: static = 640px + uploaded = N*160px + padding
-  const fanWidth = uploadedFanPhotos.length > 0
-    ? Math.max(640, 640 + uploadedFanPhotos.length * 160 + 80)
-    : 640;
 
   useEffect(() => {
     // First make the container visible with a fade-in
@@ -148,9 +144,10 @@ export const PhotoGallery = ({
             animate={isLoaded ? "visible" : "hidden"}
           >
             <div
-              className="relative"
-              style={{ width: fanWidth, height: 220 }}
+              className="relative flex justify-center"
+              style={{ height: 220 }}
             >
+              <div className="relative w-0 h-0">
               {/* Render photos in reverse order so that higher z-index photos are rendered later in the DOM */}
               {[...allPhotos].reverse().map((photo) => (
                 <motion.div
@@ -174,6 +171,7 @@ export const PhotoGallery = ({
                   />
                 </motion.div>
               ))}
+            </div>
             </div>
           </motion.div>
         </motion.div>
