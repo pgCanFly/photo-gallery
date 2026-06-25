@@ -45,18 +45,14 @@ export async function listUploadedPhotos() {
 
 export async function deletePhoto(publicId: string) {
   const { cloudName, apiKey, apiSecret } = getCloudinaryConfig();
-  const url = "https://api.cloudinary.com/v1_1/" + cloudName + "/image/destroy";
-  const formData = new URLSearchParams();
-  formData.append("public_id", publicId);
-  formData.append("api_key", apiKey);
-  formData.append("api_secret", apiSecret);
+  const ba = Buffer.from(apiKey + ":" + apiSecret).toString("base64");
+  const url = "https://api.cloudinary.com/v1_1/" + cloudName + "/resources/image/upload?public_ids%5B%5D=" + encodeURIComponent(publicId);
   const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: formData.toString(),
+    method: "DELETE",
+    headers: { Authorization: "Basic " + ba },
   });
-  const data = await res.json();
-  if (data.result !== "ok") {
-    throw new Error("Failed to delete: " + JSON.stringify(data));
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error("Failed to delete: " + res.status + " " + text);
   }
 }
