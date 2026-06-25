@@ -136,7 +136,7 @@ export const PhotoGallery = ({
         Welcome to My <span className="text-rose-500"> Stories</span>
       </motion.h3>
       <motion.div
-        className="relative mb-12 h-[400px] w-full lg:flex"
+        className="relative mb-4 h-[400px] w-full lg:flex"
         style={{ y: photosParallaxY }}
       >
         <motion.div
