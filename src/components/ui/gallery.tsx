@@ -53,21 +53,24 @@ export const PhotoGallery = ({
 
   const allPhotos = [...staticPhotos, ...uploadedFanPhotos];
 
-  // ── Horizontal scroll ──
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  // ── Horizontal scroll via translateX ──
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const [scrollOffset, setScrollOffset] = useState(0);
+  const maxScroll = Math.max(0, allPhotos.length * 160 + 40 - (typeof window !== "undefined" ? window.innerWidth : 1200));
 
   useEffect(() => {
-    const el = scrollContainerRef.current;
-    if (!el) return;
+    const area = scrollAreaRef.current;
+    if (!area) return;
     const handler = (e: WheelEvent) => {
-      if (el.scrollWidth > el.clientWidth) {
-        e.preventDefault();
-        el.scrollLeft += e.deltaY;
-      }
+      e.preventDefault();
+      setScrollOffset((prev) => {
+        const next = prev - e.deltaY;
+        return Math.min(0, Math.max(next, -maxScroll));
+      });
     };
-    el.addEventListener("wheel", handler, { passive: false });
-    return () => el.removeEventListener("wheel", handler);
-  }, []);
+    area.addEventListener("wheel", handler, { passive: false });
+    return () => area.removeEventListener("wheel", handler);
+  }, [maxScroll]);
 
   useEffect(() => {
     // First make the container visible with a fade-in
@@ -160,11 +163,14 @@ export const PhotoGallery = ({
             animate={isLoaded ? "visible" : "hidden"}
           >
             <div
-              ref={scrollContainerRef}
-              className="relative flex justify-start overflow-x-auto scrollbar-hide pl-6"
+              ref={scrollAreaRef}
+              className="relative flex justify-start overflow-hidden pl-6"
               style={{ height: 220 }}
             >
-              <div className="relative shrink-0" style={{ width: allPhotos.length * 160, height: 220 }}>
+              <div
+                className="relative shrink-0"
+                style={{ width: allPhotos.length * 160, height: 220, transform: `translateX(${scrollOffset}px)` }}
+              >
               {/* Render photos in reverse order so that higher z-index photos are rendered later in the DOM */}
               {[...allPhotos].reverse().map((photo) => (
                 <motion.div
