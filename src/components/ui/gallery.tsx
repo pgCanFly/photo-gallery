@@ -138,17 +138,17 @@ export const PhotoGallery = ({
         Welcome to My <span className="text-rose-500"> Stories</span>
       </motion.h3>
       <motion.div
-        className="relative mb-8 h-[350px] w-full items-center justify-start lg:flex"
+        className="relative mb-8 h-[350px] w-full lg:flex"
         style={{ y: photosParallaxY }}
       >
         <motion.div
-          className="relative mx-auto flex w-full max-w-7xl justify-start"
+          className="relative w-full"
           initial={{ opacity: 0 }}
           animate={{ opacity: isVisible ? 1 : 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
           <motion.div
-            className="relative flex w-full justify-start"
+            className="relative w-full"
             variants={containerVariants}
             initial="hidden"
             animate={isLoaded ? "visible" : "hidden"}
@@ -156,7 +156,7 @@ export const PhotoGallery = ({
             <div
               ref={scrollRef}
               onWheel={handleWheel}
-              className="relative flex justify-start overflow-x-auto scrollbar-hide"
+              className="relative flex justify-start overflow-x-auto scrollbar-hide pl-6"
               style={{ height: 220 }}
             >
               <div className="relative shrink-0" style={{ width: allPhotos.length * 160, height: 220 }}>
