@@ -1,6 +1,6 @@
 "use client";
 
-import { Ref, forwardRef, useState, useEffect } from "react";
+import { Ref, forwardRef, useState, useEffect, useRef, useCallback } from "react";
 import Image, { ImageProps } from "next/image";
 import { motion, useMotionValue, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
@@ -30,20 +30,20 @@ export const PhotoGallery = ({
   // ── Uploaded photos ──
   const { photos: uploadedPhotos, refresh } = useUploadedPhotos();
 
-  // Dynamic fan: static 5 photos + uploaded photos
+  // Dynamic fan: static 5 photos + uploaded photos, left-to-right
   const staticPhotos = [
-    { id: 1, order: 0, x: "-320px", y: "15px", zIndex: 50, direction: "left" as Direction, src: "https://images.pexels.com/photos/32025694/pexels-photo-32025694/free-photo-of-romantic-wedding-in-ancient-ruins.jpeg", alt: "Romantic wedding in ancient ruins" },
-    { id: 2, order: 1, x: "-160px", y: "32px", zIndex: 40, direction: "left" as Direction, src: "https://images.pexels.com/photos/31596551/pexels-photo-31596551/free-photo-of-winter-scene-with-lake-view-in-van-turkiye.jpeg", alt: "Winter scene with lake view in Van" },
-    { id: 3, order: 2, x: "0px", y: "8px", zIndex: 30, direction: "right" as Direction, src: "https://images.pexels.com/photos/31890053/pexels-photo-31890053/free-photo-of-moody-portrait-with-heart-shaped-light.jpeg", alt: "Moody portrait with heart-shaped light" },
-    { id: 4, order: 3, x: "160px", y: "22px", zIndex: 20, direction: "right" as Direction, src: "https://images.pexels.com/photos/19936068/pexels-photo-19936068/free-photo-of-women-sitting-on-hilltop-with-clouds-below.jpeg", alt: "Women sitting on hilltop with clouds below" },
-    { id: 5, order: 4, x: "320px", y: "44px", zIndex: 10, direction: "left" as Direction, src: "https://images.pexels.com/photos/20494995/pexels-photo-20494995/free-photo-of-head-of-peacock.jpeg", alt: "Head of peacock" },
+    { id: 1, order: 0, x: "0px", y: "15px", zIndex: 50, direction: "left" as Direction, src: "https://images.pexels.com/photos/32025694/pexels-photo-32025694/free-photo-of-romantic-wedding-in-ancient-ruins.jpeg", alt: "Romantic wedding in ancient ruins" },
+    { id: 2, order: 1, x: "160px", y: "32px", zIndex: 40, direction: "left" as Direction, src: "https://images.pexels.com/photos/31596551/pexels-photo-31596551/free-photo-of-winter-scene-with-lake-view-in-van-turkiye.jpeg", alt: "Winter scene with lake view in Van" },
+    { id: 3, order: 2, x: "320px", y: "8px", zIndex: 30, direction: "right" as Direction, src: "https://images.pexels.com/photos/31890053/pexels-photo-31890053/free-photo-of-moody-portrait-with-heart-shaped-light.jpeg", alt: "Moody portrait with heart-shaped light" },
+    { id: 4, order: 3, x: "480px", y: "22px", zIndex: 20, direction: "right" as Direction, src: "https://images.pexels.com/photos/19936068/pexels-photo-19936068/free-photo-of-women-sitting-on-hilltop-with-clouds-below.jpeg", alt: "Women sitting on hilltop with clouds below" },
+    { id: 5, order: 4, x: "640px", y: "44px", zIndex: 10, direction: "left" as Direction, src: "https://images.pexels.com/photos/20494995/pexels-photo-20494995/free-photo-of-head-of-peacock.jpeg", alt: "Head of peacock" },
   ];
 
   // Generate positions for uploaded photos extending to the right
   const uploadedFanPhotos = uploadedPhotos.map((up, i) => ({
     id: 100 + i,
     order: 5 + i,
-    x: `${480 + i * 160}px`,
+    x: `${800 + i * 160}px`,
     y: `${10 + (i % 3) * 15}px`,
     zIndex: 5 - i,
     direction: (i % 2 === 0 ? "left" : "right") as Direction,
@@ -52,6 +52,16 @@ export const PhotoGallery = ({
   }));
 
   const allPhotos = [...staticPhotos, ...uploadedFanPhotos];
+
+  // ── Horizontal scroll ──
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    // Only intercept if there's scrollable content
+    if (scrollRef.current && scrollRef.current.scrollWidth > scrollRef.current.clientWidth) {
+      e.preventDefault();
+      scrollRef.current.scrollLeft += e.deltaY;
+    }
+  }, []);
 
   useEffect(() => {
     // First make the container visible with a fade-in
@@ -128,26 +138,28 @@ export const PhotoGallery = ({
         Welcome to My <span className="text-rose-500"> Stories</span>
       </motion.h3>
       <motion.div
-        className="relative mb-8 h-[350px] w-full items-center justify-center lg:flex"
+        className="relative mb-8 h-[350px] w-full items-center justify-start lg:flex"
         style={{ y: photosParallaxY }}
       >
         <motion.div
-          className="relative mx-auto flex w-full max-w-7xl justify-center"
+          className="relative mx-auto flex w-full max-w-7xl justify-start"
           initial={{ opacity: 0 }}
           animate={{ opacity: isVisible ? 1 : 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
           <motion.div
-            className="relative flex w-full justify-center"
+            className="relative flex w-full justify-start"
             variants={containerVariants}
             initial="hidden"
             animate={isLoaded ? "visible" : "hidden"}
           >
             <div
-              className="relative flex justify-center"
+              ref={scrollRef}
+              onWheel={handleWheel}
+              className="relative flex justify-start overflow-x-auto scrollbar-hide"
               style={{ height: 220 }}
             >
-              <div className="relative w-0 h-0">
+              <div className="relative shrink-0" style={{ width: allPhotos.length * 160, height: 220 }}>
               {/* Render photos in reverse order so that higher z-index photos are rendered later in the DOM */}
               {[...allPhotos].reverse().map((photo) => (
                 <motion.div
