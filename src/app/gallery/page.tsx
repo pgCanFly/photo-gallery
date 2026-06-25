@@ -4,7 +4,6 @@ import { useState, useCallback } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
 import { GalleryGrid } from "@/components/ui/gallery-grid";
-import { galleryPhotos } from "@/data/photos";
 import { Button } from "@/components/ui/button";
 import { useUploadedPhotos } from "@/hooks/uploaded-photos";
 import { UploadButton } from "@/components/upload-button";
@@ -20,7 +19,7 @@ function shuffleArray<T>(array: T[]): T[] {
 
 export default function GalleryPage() {
   const [shuffleKey, setShuffleKey] = useState(0);
-  const [shuffledPhotos, setShuffledPhotos] = useState<typeof galleryPhotos | null>(null);
+  const [shuffledPhotos, setShuffledPhotos] = useState<any[] | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
 
   // ── Parallax scroll ──
@@ -32,18 +31,15 @@ export default function GalleryPage() {
   // ── Uploaded photos ──
   const { photos: uploadedPhotos, refresh, deletePhoto } = useUploadedPhotos();
 
-  // Merge static + uploaded photos for the grid
-  const allGridPhotos = [
-    ...galleryPhotos,
-    ...uploadedPhotos.map((up, i) => ({
-      id: 1000 + i,
-      src: up.url,
-      alt: `Uploaded photo ${i + 1}`,
-      title: `Uploaded ${i + 1}`,
-      public_id: up.public_id,
-      isUploaded: true as const,
-    })),
-  ];
+  // Convert uploaded photos to grid format
+  const allGridPhotos = uploadedPhotos.map((up, i) => ({
+    id: 1000 + i,
+    src: up.url,
+    alt: `Uploaded photo ${i + 1}`,
+    title: `Photo ${i + 1}`,
+    public_id: up.public_id,
+    isUploaded: true as const,
+  }));
   const totalPhotoCount = allGridPhotos.length;
 
   const handleShuffle = useCallback(() => {
