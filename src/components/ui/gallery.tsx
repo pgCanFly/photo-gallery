@@ -163,6 +163,15 @@ export const PhotoGallery = ({
                 dragConstraints={{ left: -maxScroll, right: 0 }}
                 dragElastic={0.08}
                 dragTransition={{ bounceStiffness: 300, bounceDamping: 30 }}
+                onTap={(event, info) => {
+                  // Only open lightbox if it was a tap, not a drag
+                  const rect = (event.target as HTMLElement).getBoundingClientRect();
+                  const tapX = info.point.x - rect.left - x.get();
+                  const idx = Math.round(tapX / 160);
+                  if (idx >= 0 && idx < allPhotos.length) {
+                    setSelectedIndex(idx);
+                  }
+                }}
               >
               {[...allPhotos].reverse().map((photo) => (
                 <motion.div
@@ -182,7 +191,6 @@ export const PhotoGallery = ({
                     src={photo.src}
                     alt={photo.alt}
                     direction={photo.direction}
-                    onClick={() => setSelectedIndex(photo.order)}
                   />
                 </motion.div>
               ))}
@@ -247,7 +255,6 @@ export const Photo = ({
   direction,
   width,
   height,
-  onClick,
   ...props
 }: {
   src: string;
@@ -256,7 +263,6 @@ export const Photo = ({
   direction?: Direction;
   width: number;
   height: number;
-  onClick?: () => void;
 }) => {
   const [rotation, setRotation] = useState<number>(0);
   const x = useMotionValue(200);
@@ -316,7 +322,6 @@ export const Photo = ({
       )}
       onMouseMove={handleMouse}
       onMouseLeave={resetMouse}
-      onTap={onClick}
       draggable={false}
       tabIndex={0}
     >
