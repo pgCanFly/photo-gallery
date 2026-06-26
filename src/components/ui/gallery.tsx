@@ -156,6 +156,28 @@ export const PhotoGallery = ({
               className="relative overflow-hidden pl-6"
               style={{ height: 300 }}
             >
+              {/* Left arrow */}
+              <button
+                onClick={() => x.set(Math.min(0, x.get() + 320))}
+                className="absolute left-2 top-1/2 z-30 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/30 text-white/80 transition-all duration-200 hover:bg-black/50 hover:text-white active:scale-95"
+                aria-label="向左滚动"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+              </button>
+
+              {/* Right arrow */}
+              <button
+                onClick={() => x.set(Math.max(-maxScroll, x.get() - 320))}
+                className="absolute right-2 top-1/2 z-30 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/30 text-white/80 transition-all duration-200 hover:bg-black/50 hover:text-white active:scale-95"
+                aria-label="向右滚动"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </button>
+
               <motion.div
                 className="flex"
                 style={{ width: allPhotos.length * 160, height: 220, x }}
