@@ -2,7 +2,7 @@
 
 import { Ref, forwardRef, useState, useEffect, useRef } from "react";
 import Image, { ImageProps } from "next/image";
-import { motion, useMotionValue, AnimatePresence, useScroll, useTransform } from "framer-motion";
+import { motion, useMotionValue, useSpring, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
 
 import { cn } from "@/lib/utils";
@@ -45,6 +45,7 @@ export const PhotoGallery = ({
   // ── Horizontal scroll (wheel desktop + drag mobile) ──
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const x = useMotionValue(0);
+  const xSpring = useSpring(x, { stiffness: 180, damping: 22 });
   const maxScroll = Math.max(0, allPhotos.length * 160 + 40 - (typeof window !== "undefined" ? window.innerWidth : 1200));
 
   // Wheel handler (desktop)
@@ -182,7 +183,7 @@ export const PhotoGallery = ({
 
               <motion.div
                 className="flex"
-                style={{ width: allPhotos.length * 160, height: 220, x }}
+                style={{ width: allPhotos.length * 160, height: 220, x: xSpring }}
                 drag="x"
                 dragConstraints={{ left: -maxScroll, right: 0 }}
                 dragElastic={0.08}
