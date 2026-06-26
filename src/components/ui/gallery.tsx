@@ -42,24 +42,24 @@ export const PhotoGallery = ({
     alt: `Uploaded photo ${i + 1}`,
   }));
 
-  // ── Horizontal scroll via translateX ──
+  // ── Horizontal scroll (wheel desktop + drag mobile) ──
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const [scrollOffset, setScrollOffset] = useState(0);
+  const x = useMotionValue(0);
   const maxScroll = Math.max(0, allPhotos.length * 160 + 40 - (typeof window !== "undefined" ? window.innerWidth : 1200));
 
+  // Wheel handler (desktop)
   useEffect(() => {
     const area = scrollAreaRef.current;
     if (!area) return;
     const handler = (e: WheelEvent) => {
       e.preventDefault();
-      setScrollOffset((prev) => {
-        const next = prev - e.deltaY;
-        return Math.min(0, Math.max(next, -maxScroll));
-      });
+      const curX = x.get();
+      const nextX = Math.min(0, Math.max(curX - e.deltaY, -maxScroll));
+      x.set(nextX);
     };
     area.addEventListener("wheel", handler, { passive: false });
     return () => area.removeEventListener("wheel", handler);
-  }, [maxScroll]);
+  }, [maxScroll, x]);
 
   useEffect(() => {
     // First make the container visible with a fade-in
@@ -153,14 +153,17 @@ export const PhotoGallery = ({
           >
             <div
               ref={scrollAreaRef}
-              className="relative flex justify-start overflow-hidden pl-6"
+              className="relative overflow-hidden pl-6"
               style={{ height: 300 }}
             >
-              <div
-                className="relative shrink-0"
-                style={{ width: allPhotos.length * 160, height: 220, transform: `translateX(${scrollOffset}px)` }}
+              <motion.div
+                className="flex"
+                style={{ width: allPhotos.length * 160, height: 220, x }}
+                drag="x"
+                dragConstraints={{ left: -maxScroll, right: 0 }}
+                dragElastic={0.08}
+                dragTransition={{ bounceStiffness: 300, bounceDamping: 30 }}
               >
-              {/* Render photos in reverse order so that higher z-index photos are rendered later in the DOM */}
               {[...allPhotos].reverse().map((photo) => (
                 <motion.div
                   key={photo.id}
@@ -183,7 +186,7 @@ export const PhotoGallery = ({
                   />
                 </motion.div>
               ))}
-            </div>
+            </motion.div>
             </div>
           </motion.div>
         </motion.div>
